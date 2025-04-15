@@ -5,7 +5,7 @@ ENV INSTALL_PATH /formatdb_flask
 RUN mkdir -p $INSTALL_PATH
 WORKDIR $INSTALL_PATH
 
-RUN conda create -n pyclassrich python=3 
+RUN conda create -n pyclassrich python=3
 RUN echo "source activate pyclassrich" > ~/.bashrc
 ENV PATH /opt/conda/envs/pyclassrich/bin:$PATH
 RUN conda install -n pyclassrich -c rdkit rdkit -y
@@ -20,8 +20,10 @@ RUN pip install celery
 RUN pip install redis
 RUN pip install gunicorn 
 RUN pip install python-dotenv
-RUN /opt/conda/envs/pyclassrich/bin/pip install networkx pyteomics requests scikit-learn urllib3 xmltodict zipp csvkit scipy statsmodels seaborn sqlalchemy==1.3.23 gseapy obonet pyyaml ipython
-RUN /opt/conda/envs/pyclassrich/bin/pip install git+https://github.com/computational-chemical-biology/ChemWalker.git 
+RUN conda create -n chemwalker python=3.8
+RUN /opt/conda/envs/pyclassrich/bin/pip install networkx pyteomics requests scikit-learn urllib3 xmltodict scipy statsmodels seaborn sqlalchemy==1.3.23 gseapy obonet pyyaml
+RUN /opt/conda/envs/chemwalker/bin/pip install networkx pyteomics requests scikit-learn urllib3 xmltodict zipp csvkit scipy statsmodels seaborn sqlalchemy==1.3.23 ipython
+RUN /opt/conda/envs/chemwalker/bin/pip install git+https://github.com/computational-chemical-biology/ChemWalker.git 
 RUN wget https://github.com/computational-chemical-biology/ChemWalker/blob/master/bin/MetFrag2.3-CL.jar
 RUN apt-get update -y --allow-releaseinfo-change 
 RUN dpkg --configure -a

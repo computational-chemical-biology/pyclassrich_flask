@@ -19,18 +19,20 @@ app = celery.Celery('tasks', backend='redis://redis:6379/0',
 @app.task
 def longtask(email, gtaskid, classes, field, htest,
              atype, canopus, ispositive, adduct, ppm):
-    chwcmd = f'python network_walk random-walk --taskid {gtaskid} --workflow FBMN-gnps2\
-              --comp 0  --savegraph 1 --db COCONUT.psv\
-              --metfragpath MetFrag2.3-CL.jar --kw '
-    cwpar = {"ispositive": ispositive, "adduct": adduct, "ppm": ppm}
-    chwcmd = chwcmd+json.dumps(cwpar)+'--out '+gtaskid[:5]
     try:
+        chwcmd = f'/opt/conda/envs/chemwalker/bin/python network_walk random-walk --taskid {gtaskid} --workflow FBMN-gnps2\
+                  --comp 0  --savegraph 1 --db COCONUT.psv\
+                  --metfragpath MetFrag2.3-CL.jar --kw '
+        cwpar = {"ispositive": ispositive, "adduct": adduct, "ppm": ppm}
+        chwcmd = chwcmd+'\''+json.dumps(cwpar)+'\' --out '+os.path.join('/formatdb_flask/api/tmp', gtaskid[:5])
+        os.system(chwcmd)
+
         params['gnps_taskid'] = gtaskid
         params['gnps_workflow'] = 'FBMN-gnps2'
         params['comparison']['classes'] = classes
         params['comparison']['field'] = field
         params['comparison']['test'] = htest
-        params['chw'] = gtaskid[:5]+'.tsv'
+        params['chw'] = os.path.join('/formatdb_flask/api/tmp', gtaskid[:5]+'.tsv')
         fls = os.path.join('/formatdb_flask/api/tmp', canopus)
         params['canopus_file'] = fls
         params['type'] = atype
@@ -51,9 +53,9 @@ def longtask(email, gtaskid, classes, field, htest,
         msg['Subject'] = 'Result from pyClassRich'
 
         text = ("Your data is available for download here:\n"+
-                "http://seriema.fcfrp.usp.br:5002/download/"+fls+"_chemrich.tsv"+"\n"+
-                "http://seriema.fcfrp.usp.br:5002/download/"+fls+"_clusterdf.tsv"+"\n"+
-                "WARNING: the data will be available for a single download.") 
+                f"http://200.144.213.125:5020/download?taskid={canopus}&table=chemrich"+"\n"+
+                f"http://200.144.213.125:5020/download?taskid={canopus}&table=clusterdf"+"\n"+
+                "WARNING: the data will be available for a single download.")
         part1 = MIMEText(text, 'plain')
         msg.attach(part1)
         server.sendmail(EMAIL, email, msg.as_string())

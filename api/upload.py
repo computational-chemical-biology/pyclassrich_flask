@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, make_response
 #from werkzeug import secure_filename
-#import pandas as pd
+import pandas as pd
 #from celery import uuid
 import uuid
 #from celery.result import AsyncResult
@@ -25,7 +25,6 @@ def upload_file():
       result = request.form
       email = result['email']
       gtaskid = result['gtaskid']
-      gworkflow = result['workflow']
       classes = result['classes']
       field = result['field']
       htest = result['htest']
@@ -39,13 +38,15 @@ def upload_file():
       return ('This is your task id: ' + task_id + '\n' +
               'You should receive an email with a download link soon')
 
-@app.route('/download/<task_id>')
-def download(task_id):
-      fls = os.path.join('/formatdb_flask/api/tmp', task_id)
+@app.route('/download')
+def download():
+      taskid = request.args.get('taskid')
+      table = request.args.get('table')
+      fls = os.path.join('/formatdb_flask/api/tmp', f'{taskid}_{table}.tsv')
       df = pd.read_csv(fls,  sep='\t')
-      os.remove(fls)
+      #os.remove(fls)
       resp = make_response(df.to_csv(sep='\t', index=None))
-      resp.headers["Content-Disposition"] = "attachment; filename=formatted.tsv"
+      resp.headers["Content-Disposition"] = f"attachment; filename={table}.tsv"
       resp.headers["Content-Type"] = "text/tsv"
       return resp
 
@@ -56,4 +57,4 @@ def status(task_id):
 
 if __name__ == '__main__':
     #app.run(debug = True)
-    app.run(port=5020, debug = True)
+    app.run(port=5020)
