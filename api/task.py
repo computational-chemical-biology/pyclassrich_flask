@@ -53,8 +53,8 @@ def longtask(email, gtaskid, classes, field, htest,
         msg['Subject'] = 'Result from pyClassRich'
 
         text = ("Your data is available for download here:\n"+
-                f"http://200.144.213.125:5020/download?taskid={canopus}&table=chemrich"+"\n"+
-                f"http://200.144.213.125:5020/download?taskid={canopus}&table=clusterdf"+"\n"+
+                f"http://200.144.213.125:5020/download?taskid={canopus}&table=chemrich&ftype=tsv"+"\n"+
+                f"http://200.144.213.125:5020/download?taskid={canopus}&table=clusterdf&ftype=tsv"+"\n"+
                 "WARNING: the data will be available for a single download.")
         part1 = MIMEText(text, 'plain')
         msg.attach(part1)
