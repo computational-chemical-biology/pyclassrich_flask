@@ -82,9 +82,9 @@ def impactplot():
             #file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             #return redirect(url_for('uploaded_file',
             #                        filename=filename))
-            chemrich = chemrich.copy().loc[~chemrich['cluster.index'].isnull(),
-                                     ['Identifier', 'class_name', 'InChI', 'pval', 'fchange']]
-            chemrich.columns = ['Compound_Name', 'Class', 'InChI', 'pvalue', 'foldchange']
+            #chemrich = chemrich.copy().loc[~chemrich['cluster.index'].isnull(),
+            #['Identifier', 'class_name', 'InChI', 'pval', 'fchange']]
+            #chemrich.columns = ['Compound_Name', 'Class', 'InChI', 'pvalue', 'foldchange']
 
             taskid = file1.filename.split('_')[0]
             impact_plot(clusterdf, chemrich, cfield='Class', nfield='Compound_Name',
