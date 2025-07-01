@@ -1,5 +1,6 @@
 import sys
 import os
+import shutil
 
 from chemwalker.gnps import Proteosafe
 from chemwalker.utils import * 
@@ -62,7 +63,9 @@ def random_walk(taskid, workflow, comp, db,
     # Create an empty dictionary with empty lists for each header
     empty_data = {header: [] for header in headers}
 
-    
+    if not os.path.exists(out):
+    	os.makedirs(out) 
+
     if comp!=0:
         # The try and catch is needed to capture those nodes with no candidates by MetFrag
         try:
@@ -74,23 +77,29 @@ def random_walk(taskid, workflow, comp, db,
             # Convert the dictionary to a DataFrame
             tlid = pd.DataFrame(empty_data)
     else:
-        ltlid = []
-        for c in net.ComponentIndex.unique():  
+        fls = os.listdir(out)
+        if len(fls):
+            fls = [int(x.replace('.tsv', '')) for x in fls]
+            comps = set(net.ComponentIndex.unique())-set(fls)
+        else:
+            comps = set(net.ComponentIndex.unique())
+        for c in comps:  
             if c!= -1:
                 try:
-                    ltlid.append(walk_conn_comp(net=net, spectra=spectra, tabgnps=gnps_tab,
-                                                dbmatch=match_tab, db=db, comp_index=c,
-                                                metpath=metfragpath, **kw))
+                    tlid =  walk_conn_comp(net=net, spectra=spectra, tabgnps=gnps_tab,
+                                           dbmatch=match_tab, db=db, comp_index=c,
+                                           metpath=metfragpath, **kw)
                 except Exception as error:
                     print("An exception occurred:", error)
-                    ltlid.append(pd.DataFrame(empty_data))
+                    tlid = pd.DataFrame(empty_data)
                     pass
+                tlid.to_csv(f'{out}/{c}.tsv', sep=',', index=None, quoting=csv.QUOTE_ALL)
             else:
                 warnings.warn("Self loops are not considered.")
                 pass
-        tlid = pd.concat(ltlid)
-
-    
+    cfls = os.listdir(out)
+    tlid = pd.concat([pd.read_csv(f'{out}/{x}') for x in cfls])
+    shutil.rmtree(out, ignore_errors=True)
     if savegraph and not tlid.empty:
         exportGraphml(tlid, net, comp, db, out, save=True, match_tab=match_tab)        
         tlid.to_csv('%s.tsv' % out, sep=',', index=None, quoting=csv.QUOTE_ALL)
